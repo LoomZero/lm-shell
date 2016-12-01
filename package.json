@@ -17,5 +17,9 @@
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/LoomZero/lm-shell/issues"
+  },
+  "dependencies": {
+    "tzero-classes": "~2.0.0",
+    "yargs": "~6.4.0"
   }
 }
