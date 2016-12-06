@@ -5,14 +5,50 @@ module.exports = class Main {
   static main(info) {
     this.info = info;
 
-    // log(this.info);
-
-    var exe = new tzero.command.Execute(this.info.args._.join(' '));
-    if (exe.execute()) {
-      log(exe._output);
-    } else {
-      log(exe._error);
+    let IO = new tzero.lm.IO();
+    let commandname = this.args(0);
+    if (!commandname) commandname = 'info';
+    let Command = null;
+    try {
+      Command = require(this.root() + '/commands/' + commandname + '.command.js');
+    } catch (e) {
+      IO.error('Command [0] is unknown!', commandname);
+      return;
     }
+    let help = this.args('h', false);
+
+    let command = new Command(IO);
+
+    if (help) {
+      command.help();
+    } else {
+      command.execute();
+    }
+
+
+    // var exe = new tzero.base.Execute(this.info.args._.join(' '));
+    // if (exe.execute()) {
+    //   log(exe._output.toString());
+    // } else {
+    //   log(exe._error);
+    // }
+  }
+
+  static current() {
+    return this.info.cd;
+  }
+
+  static root() {
+    return this.info.root;
+  }
+
+  static args(arg, fallback = null) {
+    if (arg === undefined) return this.info.args;
+
+    if (Number.isInteger(arg)) {
+      return this.info.args._[arg] || fallback;
+    }
+    return this.info.args[arg] || fallback;
   }
 
 }
