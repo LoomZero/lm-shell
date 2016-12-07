@@ -1,4 +1,7 @@
-'use strict'; 
+'use strict';
+
+const Main = tzero.lm.Main;
+const Execute = tzero.base.Execute;
 
 module.exports = class Command {
 
@@ -11,15 +14,25 @@ module.exports = class Command {
   }
   
   execute() {
-
+    this.warn('No execute function defined for [0]!', this.constructor.name);
   }
 
   help() {
-  
-  } 
+    this.warn('No execute function defined for [0]!', this.constructor.name);
+  }
 
-  args(arg) {
-    return tzero.lm.Main.args(arg);
+  exe(command) {
+    if (this.args('save', false)) {
+      this.log('SAVE: ' + command);
+    } else {
+      let execute = new Execute(command);
+      execute.execute();
+      return execute;
+    }
+  }
+
+  args(arg, fallback = null) {
+    return Main.args(arg, fallback);
   }
 
   log() {

@@ -8,8 +8,13 @@ module.exports = class IO {
     console.log.apply(console, arguments);
   }
 
-  warn() {
-    console.warn.apply(console, arguments);
+  warn(message) {
+    let params = this.args(arguments, 1);
+
+    for (let i = 0; i < params.length; i++) {
+      message = message.replace('\[' + i + '\]', '\'' + params[i] + '\'');
+    }
+    console.log(colors.yellow('WARN: ' + message));
   }
 
   error(message) {
@@ -18,7 +23,7 @@ module.exports = class IO {
     for (let i = 0; i < params.length; i++) {
       message = message.replace('\[' + i + '\]', '\'' + params[i] + '\'');
     }
-    console.log(colors.red('Error: ' + message));
+    console.log(colors.red('ERROR: ' + message));
   }
 
   args(args, offset = 0) {
