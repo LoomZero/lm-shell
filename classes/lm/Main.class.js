@@ -1,56 +1,73 @@
 'use strict'; 
 
 const IO = tzero.lm.IO;
+const Tool = tzero.lm.Tool;
+const glob = require('glob');
 
 module.exports = class Main {
 
   static main(info) {
-    this.info = info;
+    this._info = info;
+    this._info.io = new IO();
+    this._register = [];
 
-    let io = new IO();
-    let commandname = this.args(0);
-    if (!commandname) commandname = 'info';
-    let Command = null;
-    try {
-      Command = require(this.root() + '/commands/' + commandname + '.command.js');
-    } catch (e) {
-      io.error('Command [0] is unknown!', commandname);
+    this.boot();
+
+    let commandname = this.args(0) || 'info';
+    let command = this.search(commandname);
+
+    if (command === null) {
+      this.info().io.error('No command or alias found with name [0]', commandname);
       return;
     }
-    let help = this.args('h', false);
 
-    let command = new Command(io);
+    let help = this.args('h', false);
 
     if (help) {
       command.help();
     } else {
       command.execute();
     }
+  }
 
+  static search(commandname) {
+    for (let index in this._register) {
+      if (this._register[index].alias().indexOf(commandname) >= 0) {
+        return this._register[index];
+      }
+    }
+    return null;
+  }
 
-    // var exe = new tzero.base.Execute(this.info.args._.join(' '));
-    // if (exe.execute()) {
-    //   log(exe._output.toString());
-    // } else {
-    //   log(exe._error);
-    // }
+  static boot() {
+    const files = glob.sync('commands/**/*.command.js', {cwd: this.root(), absolute: true});
+
+    for (let file in files) {
+      let c = require(files[file]);
+
+      this._register.push(new c(this.info()));
+    }
+  }
+
+  static info() {
+    return this._info;
   }
 
   static current() {
-    return this.info.cd;
+    return this._info.cd;
   }
 
   static root() {
-    return this.info.root;
+    return this._info.root;
   }
 
   static args(arg, fallback = null) {
-    if (arg === undefined) return this.info.args;
+    if (arg === undefined) return this._info.args;
 
-    if (Number.isInteger(arg)) {
-      return this.info.args._[arg] || fallback;
+    if (Tool.isInt(arg)) {
+      return this._info.args._[arg] || fallback;
     }
-    return this.info.args[arg] || fallback;
+    return this._info.args[arg] || fallback;
   }
 
 }
